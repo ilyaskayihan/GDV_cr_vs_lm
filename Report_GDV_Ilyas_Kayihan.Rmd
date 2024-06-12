@@ -1,0 +1,539 @@
+---
+title: "GDV: cr_vs_lm"
+author: "Ilyas Kayihan"
+date: "2024-03-07"
+output:
+  html_document:
+    toc: true
+    number_sections: true
+    toc_float: true
+    css: style.css
+    code_folding: hide
+  pdf_document:
+    toc: true
+---
+Whole Report on Github: https://github.com/ilyaskayihan/GDV_cr_vs_lm
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+
+# **LO1: Visualization basics, chart types**
+
+
+```{r}
+#our data
+goals_data <- read.csv('/Users/ilyas/Desktop/FHNW/2. Semester/gdv/data.csv')
+
+```
+
+
+
+```{r}
+#used libraries
+library(ggplot2)
+library(fmsb)
+library(plotly)
+library(dplyr)
+library(tidyr)
+```
+
+## **Comparison: Cristiano Ronaldo vs Lionel Messi**
+
+Comparison of Lionel Messi and Cristiano Ronaldo's Goal Statistics: Analyzing the goal-scoring prowess of Lionel Messi and Cristiano Ronaldo is essential for understanding their performance on the field. By delving into the details of their goal-scoring records, we can identify patterns and factors that may contribute to their overall effectiveness. Visualizing this comparison through appropriate chart types enables us to present the data clearly and effectively.
+
+Selecting the Optimal Visualization Techniques: The choice of visualization methods plays a pivotal role in conveying insights from the data. It hinges upon the nature of the data and the narrative we aim to convey. In the context of comparing Messi and Ronaldo's goal statistics, utilizing suitable chart types ensures that our message resonates with clarity and precision. For instance, bar charts are adept at illustrating discrete variables such as goal counts, while radar charts offer a comprehensive overview of performance across multiple dimensions. It's about employing the right visual tools to articulate the story within the data.
+
+Visual Representation of Goal Types and Positions: Understanding the diversity in goal types and scoring positions is paramount in evaluating the strengths and strategies of Messi and Ronaldo. Employing a combination of bar charts and heatmaps provides insights into the distribution and frequency of different goal types and scoring positions. For example, a heatmap showcasing the areas of the pitch where each player scores most frequently offers valuable insights into their playing styles and positioning on the field.
+
+Comparative Analysis of Goal Scoring Efficiency: Assessing the efficiency of Messi and Ronaldo's goal-scoring endeavors requires a nuanced approach. Box plots or scatter plots can effectively highlight variations in goal-scoring efficiency, considering factors such as shots taken, conversion rates, and goal-to-game ratios. These visualizations offer a comparative lens through which we can discern the effectiveness of each player in converting opportunities into goals.
+
+Interpreting Pie Charts or Bar Charts Representing Goal Contributions: Pie charts or bar charts serve as intuitive tools for depicting the distribution of goal contributions by Messi and Ronaldo. They offer a snapshot of the proportion of goals scored by each player and facilitate comparisons between them. Pie charts emphasize the relative contribution of each player, while bar charts enable a visual juxtaposition of their goal-scoring outputs. Understanding the distribution of goal contributions is fundamental for contextualizing their overall impact on the game.
+
+In summary, the strategic selection of visualization techniques and the creation of insightful visual representations are essential steps in unraveling insights from Messi and Ronaldo's goal statistics. By leveraging appropriate chart types and visualizations, we can unravel patterns and nuances that shed light on their respective performances on the field.
+
+## **Application of Visualization Types**
+
+```{r}
+# Subset for Cristiano Ronaldo 
+cr <- subset(goals_data, Player == "Cristiano Ronaldo")
+
+# Subset for Lionel Messi 
+lm <- subset(goals_data, Player == "Lionel Messi")
+
+```
+
+
+```{r}
+
+# Grouping goals by season for Cristiano Ronaldo
+season_cr <- aggregate(Type ~ Season, data = cr, FUN = length)
+season_cr <- season_cr[season_cr$Season != 0, ] # Remove position 0 if present
+season_cr <- season_cr[order(-season_cr$Type), ] # Sorting by number of goals in descending order
+
+# Determine the color palette for Cristiano Ronaldo
+color_cr <- colorRamp(c("lightblue", "darkblue"))
+
+# Create the bar plot for Cristiano Ronaldo with color gradient
+plot_cr <- plot_ly(season_cr, x = ~Season, y = ~Type, type = "bar", name = "Cristiano Ronaldo", color = ~Type, colors = color_cr)
+
+# Grouping goals by season for Lionel Messi
+season_lm <- aggregate(Type ~ Season, data = lm, FUN = length)
+season_lm <- season_lm[season_lm$Season != 0, ] # Remove position 0 if present
+season_lm <- season_lm[order(-season_lm$Type), ] # Sorting by number of goals in descending order
+
+# Determine the color palette for Lionel Messi
+color_lm <- colorRamp(c("lightcoral", "darkred"))
+
+# Create the bar plot for Lionel Messi with color gradient
+plot_lm <- plot_ly(season_lm, x = ~Season, y = ~Type, type = "bar", name = "Lionel Messi", color = ~Type, colors = color_lm)
+
+subplot <- subplot(plot_cr, plot_lm, nrows = 1, titleX = FALSE)
+
+# Adjusting the layout
+subplot <- subplot %>% layout(title = "Comparison of Goals by Ronaldo and Messi per season",
+                               xaxis = list(title = "Playing Season"),
+                               yaxis = list(title = "Goals"),
+                               height = 500, width = 800)
+
+subplot
+
+
+
+```
+
+```{r}
+# bar plot for  Cristiano Ronaldo
+ggplot(season_cr, aes(x = Season, y = Type, fill = Type)) +
+  geom_bar(stat = "identity") +
+  scale_fill_gradient(low = "lightcoral", high = "darkred") +
+  labs(title = "Goals by Cristiano Ronaldo per season",
+       x = "Playing Season",
+       y = "Goals") +
+  theme_minimal() +
+  theme(legend.title = element_blank()) +
+  theme(legend.position = "none")
+
+# bar plot for  Lionel Messi
+ggplot(season_lm, aes(x = Season, y = Type, fill = Type)) +
+  geom_bar(stat = "identity") +
+  scale_fill_gradient(low = "lightblue", high = "darkblue") +
+  labs(title = "Goals by Lionel Messi per season",
+       x = "Playing Season",
+       y = "Goals") +
+  theme_minimal() +
+  theme(legend.title = element_blank()) +
+  theme(legend.position = "none")
+
+```
+
+A bar chart with varying shades of color, darker for higher goal counts, is ideal for comparing Messi and Ronaldo's goal counts per season. This visualization allows for a quick comparison of their goal-scoring performance over time, highlighting seasons where one player outperformed the other.
+
+```{r}
+radar <- data.frame(Header = c(436, 22, 24, 112),
+                   Direct_freekick = c(436, 22, 52, 49),
+                   Penalty = c(436, 22, 84, 132),
+                   Left_foot = c(436, 22, 436, 113),
+                   Right_foot = c(436, 22, 85, 253),
+                   Other = c(436, 22, 22, 51),
+                   row.names = c("max", "min", "Messi", "Ronaldo"))
+
+
+colors_fill <- c(scales::alpha ("skyblue", 0.2), 
+                 scales::alpha ("tomato", 0.2))
+
+colors_line <- c(scales::alpha("royalblue", 0.9), 
+                 scales::alpha("tomato", 0.9))
+
+radarchart(radar,
+           seg = 6,
+           title = "Goals",
+           pcol = colors_line,
+           pfcol = colors_fill,
+           plwd = 2)
+
+legend(x=0.6,
+       y=1.35,
+       legend = rownames(radar[-c(1,2),]),
+       bty = "n", pch = 20, col = colors_line, cex = 1.2, pt.cex = 1.2)
+```
+
+A radar chart is well-suited for showcasing the distribution of goal types scored by Messi and Ronaldo. Each axis represents a different type of goal (e.g., penalties, headers, free kicks), allowing for a comprehensive comparison of their scoring techniques. This visualization provides a holistic view of their goal-scoring diversity, revealing each player's strengths and preferences in scoring various types of goals.
+
+```{r}
+# Selection of the position column for Cristiano Ronaldo (CR7).
+cr_selected <- cr[, "Playing_Position"]
+
+# Count the frequency of each position
+freq <- table(cr_selected)
+
+# Create a Pie Chart for the positions
+fig_cr <- plot_ly(labels = names(freq), values = freq, type = 'pie', 
+               marker = list(colors = rainbow(length(freq))), 
+               textinfo = 'label+percent', 
+               title = "Pie chart for Playing Positions in CR7's dataset")
+
+# Show the Pie Chart and place the legend on the right
+fig_cr %>% layout(showlegend = TRUE, legend = list(orientation = "v", x = 1, y = -0.2)) %>% 
+  config(displayModeBar = FALSE)
+
+
+# Selection of the position column for Lionel Messi (LM)
+lm_selected <- lm[, "Playing_Position"]
+
+# Count the frequency of each position
+freq <- table(lm_selected)
+
+# Create a Pie Chart for the positions
+fig_lm <- plot_ly(labels = names(freq), values = freq, type = 'pie', 
+               marker = list(colors = rainbow(length(freq))), 
+               textinfo = 'label+percent', 
+               title = "Pie chart for Playing Positions in LM's dataset")
+
+# Show the Pie Chart and place the legend on the right
+fig_lm %>% layout(showlegend = TRUE, legend = list(orientation = "v", x = 1, y = -0.2)) %>% 
+  config(displayModeBar = FALSE)
+
+
+
+```
+Pie charts illustrating the distribution of goals scored by position played are effective for comparing Messi and Ronaldo's goal-scoring patterns. Each slice of the pie represents a different position (e.g., striker, winger, attacking midfielder), allowing for a visual assessment of where each player is most prolific. This visualization enables a clear understanding of their versatility and effectiveness in different positions on the field.
+
+
+# **LO2: Visual Perception**
+
+The selection of the colors red and blue ensures a clear distinction between the two players, enhancing the readability and interpretability of the graphic. Additionally, color gradients within the chosen spectra were incorporated, with more intense shades representing higher goal counts and lighter shades indicating lower goal counts. This allows for an intuitive visualization of the data, as the human eye can easily recognize and interpret differences in color intensity.
+
+The use of color gradients is crucial for visualization, as it helps highlight various values within the same category (in this case, the number of goals scored). A gradient makes it easier to immediately identify relative differences and gain a deeper understanding of the data without the need for additional labels or numbers. For the human eye, color gradients are particularly effective, as they create a subtle yet clear visual hierarchy, thereby facilitating the analysis and interpretation of complex datasets.
+
+
+Interactive visualizations offer significant advantages over traditional static visualizations. They enable dynamic exploration of data, allowing users to apply filters, select different dimensions, and examine data points more closely. This leads to a deeper understanding and more comprehensive analysis of the data, as various perspectives can be considered.
+
+Usability and accessibility are also key benefits of interactive visualizations. Real-time manipulation of data and immediate visual feedback allow for faster and more effective insight generation, particularly with large and complex datasets. This enables relevant information to be identified and extracted quickly.
+
+Furthermore, interactive visualizations promote user engagement and involvement. Users feel more connected and are more inclined to conduct in-depth analyses. This results in better decision-making processes, as more context and details are taken into account.
+
+Finally, interactive visualizations support effective communication and knowledge sharing. Interactive dashboards and reports present complex information clearly and comprehensibly, making them easily understandable by colleagues and decision-makers.
+
+In summary, interactive visualizations offer deeper insights, improved usability, increased engagement, customization options, and a better basis for communication, making them an indispensable tool in modern data analysis.
+
+## **Practical Usage**
+
+
+```{r}
+# Determining the color palette for Cristiano Ronaldo
+color_cr <- colorRamp(c("lightcoral", "darkred"))
+
+# Creating the bar chart for Cristiano Ronaldo  with a color gradient.
+plot_cr <- plot_ly(season_cr, x = ~Season, y = ~Type, type = "bar", name = "Cristiano Ronaldo", color = ~Type, colors = color_cr)
+
+# Determining the color palette for Lionel Messi.
+color_lm <- colorRamp(c("lightblue", "darkblue"))
+
+# Creating the bar chart for Lionel Messi with a color gradient.
+plot_lm <- plot_ly(season_lm, x = ~Season, y = ~Type, type = "bar", name = "Lionel Messi", color = ~Type, colors = color_lm)
+
+subplot <- subplot(plot_cr, plot_lm, nrows = 1, titleX = FALSE)
+
+# Layout
+subplot <- subplot %>% layout(title = "Comparison of Goals by Ronaldo and Messi per season",
+                               xaxis = list(title = "Playing Season"),
+                               yaxis = list(title = "Goals"),
+                               height = 500, width = 800)
+
+subplot
+```
+
+Axis labeling is especially crucial in radar charts as these diagrams utilize multiple axes to represent different dimensions or variables. Clear labeling allows viewers to comprehend the significance of each axis and interpret the data accurately. Without adequate labeling, axis values could be confusing, potentially diminishing the effectiveness of the visualization.
+
+```{r}
+# Prepare data for the radar chart.
+radar <- data.frame(Header = c(436, 22, 24, 112),
+                    Direct_freekick = c(436, 22, 52, 49),
+                    Penalty = c(436, 22, 84, 132),
+                    Left_foot = c(436, 22, 436, 113),
+                    Right_foot = c(436, 22, 85, 253),
+                    Other = c(436, 22, 22, 51),
+                    row.names = c("max", "min", "Messi", "Ronaldo"))
+
+# radar chart 
+radarchart(radar,
+           axistype = 1,
+           # Adjustment of colors and lines.
+           pcol = c("blue", "red"), 
+           pfcol = c(rgb(0.2, 0.5, 0.5, 0.5), rgb(0.8, 0.2, 0.5, 0.5)), 
+           plwd = 4,
+           # Adjustment of axis labels and lines.
+           cglcol = "grey", 
+           cglty = 1, 
+           axislabcol = "grey", 
+           caxislabels = seq(0, 436, 100), 
+           cglwd = 0.8,
+           #Adjustment of variable labels.
+           vlcex = 0.8
+)
+
+# Adding a legend.
+legend(x = "topright", 
+       legend = rownames(radar)[-c(1, 2)], 
+       bty = "n", 
+       pch = 20, 
+       col = c("blue", "red"), 
+       text.col = "black", 
+       cex = 1.2, 
+       pt.cex = 3)
+
+```
+
+The use of bar charts in comparison further highlights the goal-scoring performance of each player across different positions. While radar charts provide a comprehensive overview of performance across various dimensions, bar charts offer a more straightforward comparison, particularly in showcasing which player scored more goals in each specific position. This complementary approach enhances the audience's understanding of the players' strengths and weaknesses in different playing positions.
+A barplot is often preferable to a pie chart as it provides a clearer representation of relative sizes and facilitates easier and more accurate comparisons between different categories.
+
+
+```{r}
+
+# Group by goals per season for Ronaldo
+pos_cr <- aggregate(Type ~ Playing_Position, data = cr, FUN = length)
+pos_cr <- pos_cr[pos_cr$Playing_Position != 0, ]
+pos_cr <- pos_cr[order(-pos_cr$Type), ] 
+
+
+#group by goals per season for Messi
+pos_lm <- aggregate(Type ~ Playing_Position, data = lm, FUN = length)
+pos_lm <- pos_lm[pos_lm$Playing_Position != 0, ] 
+pos_lm <- pos_lm[order(-pos_lm$Type), ] 
+
+# Data of Ronaldo
+pos_cr <- data.frame(
+  Playing_Position = c("LW", "CF", "RW", "AM", "LW", "CF"),
+  Goals = c(356, 209, 79, 58, 5, 3),
+  Player = "Ronaldo"
+)
+
+# Data of Messi
+pos_lm <- data.frame(
+  Playing_Position = c("CF", "RW", "RW", "CF", "SS", "SS", "AM", "AM", "LW"),
+  Goals = c(276, 221, 95, 40, 32, 23, 8, 7, 1),
+  Player = "Messi"
+)
+
+# Combine both data
+pos_data <- rbind(pos_cr, pos_lm)
+
+# Add color
+color_palette <- c("Ronaldo" = "red", "Messi" = "blue")
+
+
+# Bar plot
+ggplot(pos_data, aes(x = Playing_Position, y = Goals, fill = Player)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_manual(values = color_palette) +
+  labs(title = "Comparison of Goals by Playing Position for Ronaldo and Messi",
+       x = "Playing Position", y = "Total Goals") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+
+
+```
+As a closing point, it's worth mentioning that the size of the bars in the bar chart could be adjusted to convey additional information or emphasize specific aspects of the data. By altering the width of the bars, one can accentuate the relative importance of each data point or draw attention to particular trends or patterns. This adjustment can influence the visual perception of the audience, potentially emphasizing certain insights or downplaying others, thereby shaping the overall narrative conveyed by the visualization.
+
+
+
+# **LO3: Design Principles vs. Data**
+
+In our dataset, each row corresponds to a scored goal accompanied by pertinent details, including the minute of scoring, the playing position, or the body part employed for scoring. When necessitating the quantification of goals contingent upon specific attributes, such as playing position or body part, an aggregation procedure becomes imperative. This process, as previously undertaken in LE1 and LE2, involved delineating goals across diverse positions, body parts, and played seasons, followed by their respective enumeration.
+
+We filtered with the "subset"-function Cristiano Ronaldo's data into a dataset labeled "cr" and Lionel Messi's data into a dataset labeled "lm".
+
+As example the "cr" dataset: It is containing detailed information on Cristiano Ronaldo's career goals. The dataset included various data types: categorical (Player, Season, Competition, Matchday, Venue, Club, Opponent, Result, Playing_Position), date (Date), and numeric data (Minute). 
+
+To prepare the data for visualization, we first addressed the formatting of the 'Minute' variable, which included values such as "90+X". These were standardized by converting any "90+X" values to simply "90" and ensuring all 'Minute' entries were numeric. This step was crucial for accurate plotting and subsequent analysis.
+
+Next, we aggregated the data to count the number of goals scored in each minute of play. This involved transforming the raw goal records into a frequency table, capturing the total number of goals scored in each individual minute (from 1 to 90). These counts were then organized into a new dataframe, with columns for 'Minute' and 'Goals'.
+
+Using the prepared data, we created a scatterplot with 'Minute' on the x-axis and 'Goals' on the y-axis. This plot provides a clear visualization of the distribution of Cristiano Ronaldo's goals across different minutes in a match.
+
+The resulting scatterplot reveals specific minutes where Ronaldo tends to score more frequently, offering insights into his scoring patterns throughout his career.
+
+```{r}
+# Convert minutes with "90+X" to "90" and convert them into numeric values.
+cr$Minute <- as.numeric(gsub("\\+.*", "", cr$Minute))
+
+# Count goals per minute.
+goals_per_minute <- table(cr$Minute)
+
+# Convert data into a data frame.
+goals_df <- data.frame(Minute = as.numeric(names(goals_per_minute)),
+                       Goals = as.numeric(goals_per_minute))
+
+# Scatterplot with goals per minute.
+ggplot(goals_df, aes(x = Minute, y = Goals)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +  #add Regression-line
+  labs(title = "Goals per Minute",
+       x = "Minute", y = "Number of Goals")
+```
+```{r}
+# Convert minutes with "90+X" to "90" and convert them into numeric values.
+lm$Minute <- as.numeric(gsub("\\+.*", "", lm$Minute))
+
+# Count goals per minute.
+goals_per_minute2 <- table(lm$Minute)
+
+# Convert data into a data frame.
+goals_df2 <- data.frame(Minute = as.numeric(names(goals_per_minute2)),
+                       Goals = as.numeric(goals_per_minute2))
+
+# Scatterplot with goals per minute.
+ggplot(goals_df2, aes(x = Minute, y = Goals)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +  # add Regression-line
+  labs(title = "Goals per Minute",
+       x = "Minute", y = "Number of Goals")
+```
+The regression line is a mathematical tool used in statistics to illustrate the general trend in a dataset. It shows the relationship between an independent variable (in this case, the match minute) and a dependent variable (the number of goals). By fitting a straight line to the data points, we can identify patterns or trends that might not be immediately obvious.
+
+In our analysis, the regression line reveals how the number of goals changes over the course of a match. The slope of the line indicates whether a player tends to score more or fewer goals as the match progresses.
+
+Our results indicate that Messi's regression line has a steeper slope compared to Ronaldo's. This suggests that Messi scores more goals later in the game, while Ronaldo's goal-scoring rate remains more constant throughout the match.
+
+# **LO4: Grammar of Graphics Tools**
+
+## **Grammar of Graphics**
+
+The Grammar of Graphics is a conceptual framework for creating statistical graphics. It provides a systematic approach to constructing visualizations by breaking them down into their fundamental components. This framework was originally proposed by Leland Wilkinson and later extended by Hadley Wickham in the development of the ggplot2 package for R.
+
+The key components of the Grammar of Graphics include:
+
+1. Data: The dataset to be visualized.
+2. Aesthetics: The visual properties (e.g., position, color, size) that represent data attributes.
+3. Geometric Objects (Geoms): The visual elements (e.g., points, lines, bars) used to represent data.
+4. Statistical Transformations (Stats): The calculations applied to the data before plotting (e.g., binning, smoothing).
+5. Scales: The mapping between data values and their visual representation (e.g., color scales, size scales).
+6. Coordinate System: The space in which the data is plotted (e.g., Cartesian, polar).
+7. Facets: The division of data into subsets for individual plots.
+
+By using these components, the Grammar of Graphics allows for flexible and consistent creation of a wide variety of visualizations. It enables users to move beyond predefined chart types and tailor visualizations to better represent their data.
+
+To examine an example of the Grammar of Graphics, we will analyze the most recent season (2022/2023) for each player. 
+
+```{r}
+# Filter data for season 11/12
+cr_prime <- cr[cr$Season == "22/23", ]
+lm_prime <- lm[lm$Season == "22/23", ]
+```
+
+## **Example**
+
+```{r}
+# Create plot 
+ggplot(cr_prime, aes(x = Minute, y = Venue, color = Type, shape = Competition)) +
+  geom_point(size = 3) +
+  geom_line() +
+  labs(title = "Cristiano Ronaldo - Player Actions",
+       x = "Minute",
+       y = "Position Played") +
+  theme_minimal()
+
+```
+
+```{r}
+# Create plot   
+ggplot(lm_prime, aes(x = Minute, y = Venue, color = Type, shape = Competition)) +
+  geom_point(size = 3) +
+  geom_line() +
+  labs(title = "Cristiano Ronaldo - Player Actions",
+       x = "Minute",
+       y = "Position Played") +
+  theme_minimal()
+```
+
+
+We are currently examining the season 22/23. The x-axis represents the scoring-minute, while the y-axis shows the venue. The color of the points indicates the type of how the goal is scored, and the shape represents the competition in which the player played.
+
+# **LO5:  Evaluation**
+
+Usability Testing Overview: Goals-Comparison of Ronaldo and Messi Data Visualization
+
+Usability testing plays a critical role in User Experience (UX) research, providing a structured approach to evaluating interfaces through user interactions and feedback collection. This method is essential for refining interfaces based on real user behavior, especially in iterative design processes. When it comes to visualizing Ronaldo's and Messi's data, usability testing is vital to ensure that the presented information is effective and user-friendly.
+
+Why Usability Test?
+Usability testing is undertaken to achieve several goals when comparing data visualization between Messi and Ronaldo:
+
+Identifying Problems: Uncover design flaws or challenges within the product or service interface.
+Uncovering Opportunities: Discover areas for improvement and innovation in presenting Messi and Ronaldo's data.
+Understanding User Behavior: Gain insights into how the target users interact with the interface and their preferences regarding data visualization of Messi and Ronaldo's performance.
+The iterative nature of design, driven by observations from real users, underscores the necessity of usability testing in refining the user experience when comparing Messi and Ronaldo's data. Even the most skilled UX designers rely on empirical studies to create interfaces that align with user needs.
+
+Facilitator: Guides the participant through the test process, administering tasks related to comparing Messi and Ronaldo's data visualization, and collecting valuable feedback. Balances the role of providing instructions without influencing participant behavior.
+Tasks: Realistic activities performed by participants, reflecting actions they might take in real-life scenarios when comparing Messi and Ronaldo's data visualization. Task wording is crucial to prevent misunderstandings or priming effects.
+Participant: Represents a realistic user interested in comparing Messi and Ronaldo's performance data, contributing to the diversity of user perspectives. Participants may be asked to think aloud during tasks, providing insights into their thoughts, behaviors, and motivations.
+Types of Usability Testing:
+Usability testing can be qualitative or quantitative, focusing on evaluating the effectiveness and user-friendliness of comparing Messi and Ronaldo's data visualization.
+
+Qualitative: Focuses on collecting insights, findings, and anecdotes about user interactions, uncovering problems.
+Quantitative: Concentrates on metrics describing the user experience, such as task success and time on task, suitable for benchmarking.
+Usability testing can also be conducted remotely or in-person, each with its own advantages and considerations. Remote testing, whether moderated or unmoderated, has gained popularity due to its efficiency and cost-effectiveness.
+
+Cost of Usability Testing:
+Usability testing costs can vary depending on the complexity and scope of the study. Simple studies can be cost-effective, involving incentives for participants and a few days of planning, testing, and analysis. More elaborate studies, encompassing multiple designs, international testing, or sophisticated equipment, may incur higher costs but offer a potentially higher return on investment.
+
+Conclusion:
+In the context of comparing Messi and Ronaldo's performance data, usability testing emerges as a vital component to ensure that the interface effectively communicates information, addresses user needs, and provides an optimal user experience. The upcoming usability testing in the Learning Outcome 5 (LO5) report aims to employ these principles to evaluate the usability of the data visualization, allowing for continuous improvement and refinement in subsequent design iterations.
+
+## Mini Evaluation for each types
+
+Learning Outcome 1: Visualization Basics, Chart Types
+The incorporation of different visualization types for Messi and Ronaldo's goal-scoring data offers a comprehensive understanding of their performance dynamics. The bar plots effectively illustrate the distribution of goals across seasons, providing a clear overview of their goal-scoring patterns. These visualizations allow for easy identification of trends in goal frequency and distribution over time. The radar chart depicting goals scored with different body parts offers an insightful comparison, highlighting their diverse scoring techniques. However, the pie chart representing the positions from which goals were scored was less effective, as it made it difficult to discern specific values due to its format.
+
+Learning Outcome 2: Visual Perception
+Utilizing color, size, and interactivity in the plots enhances the visualization's interpretability. For the bar plot, interactive features helped in closer examination of goal counts per season. In the radar chart, appropriate axis labeling and thicker color lines improved clarity for comparing goal-scoring techniques. Transforming the pie chart into a bar plot allowed for a direct comparison, enabling quick assessment of goal distribution across positions.
+
+Learning Outcome 3: Design Principles vs. Data
+The scatter plot depicting goals per minute throughout their careers showcases the connection between data decisions and design principles for Messi and Ronaldo's goal data. These visualizations effectively represent the trend of goals scored over time for each player, emphasizing the importance of aligning design decisions with data types. The use of a regression line provides insights into each player's goal-scoring tendencies, whether they tend to score more frequently at the beginning, end, or consistently throughout their careers. This comprehensive comparison aids in understanding the nuances of Messi and Ronaldo's performance metrics.
+
+Learning Outcome 4: Grammar of Graphics Tools
+The implementation of ggplot for creating visualizations adheres to the grammar of graphics principles. The scatter plot with color encoding for Messi and Ronaldo's goals demonstrates systematic decision-making, emphasizing the appropriate use of visual variables to convey meaningful insights. The visualizations are both informative and adherent to the grammar of graphics framework, ensuring clarity and coherence in presenting Messi and Ronaldo's performance data.
+
+Conclusion:
+The mini evaluation reveals a comprehensive understanding and successful application of visualization basics, visual perception principles, the integration of design decisions with data characteristics, and the utilization of grammar of graphics tools in comparing Messi and Ronaldo's performance data. Each visualization effectively communicates the underlying information and aligns with the specified learning outcomes. The incorporation of color, size, and orientation demonstrates a nuanced understanding of both visual perception and design principles. These elements collectively contribute to the creation of meaningful and insightful visualizations, showcasing a strong grasp of fundamental concepts in data visualization for Messi and Ronaldo's goal data.
+
+
+
+# **Sources**
+
+LO1
+Bar Chart: https://datavizcatalogue.com/methods/bar_chart.html
+
+Radar Chart: https://datavizcatalogue.com/methods/radar_chart.html
+
+Pie Chart: https://datavizcatalogue.com/methods/pie_chart.html
+
+LO2
+Interactive Visualisation: https://books.google.ch/books?id=qFmS95vf6H8C&pg=PA69&hl=de&source=gbs_toc_r&cad=2#v=onepage&q&f=true  (Chapter 10 - Interacting with visualization)
+
+Farben: https://books.google.ch/books?id=qFmS95vf6H8C&pg=PA69&hl=de&source=gbs_toc_r&cad=2#v=onepage&q&f=true (Chapter 4 - Color)
+
+Richtige Beschriftung Radar Chart:
+https://www.jaspersoft.com/de/articles/what-is-a-radar-chart#:~:text=Die%20Datenpunkte%20werden%20auf%20verschiedenen,h%C3%B6here%20oder%20niedrigere%20Werte%20haben.
+
+Balkendiagramm als Vergleich: https://support.zendesk.com/hc/de/articles/4408839361946-Diagrammtypen-zum-Vergleich-von-Kategorien
+
+LO3
+data types: https://towardsdatascience.com/data-types-in-statistics-347e152e8bee
+
+regression: Module llr at fhnw
+
+LO4: 
+grammer of graphics: https://spaces.technik.fhnw.ch/lernmaterialien/website/a-layered-grammar-of-graphics
+
+Code for plotting: https://towardsdatascience.com/a-comprehensive-guide-to-the-grammar-of-graphics-for-effective-visualization-of-multi-dimensional-1f92b4ed4149
+
+Beste Saison von Ronaldo und Messi: https://de.statista.com/statistik/daten/studie/1090883/umfrage/lionel-messi-torquote-je-saison/#:~:text=Die%20h%C3%B6chste%20Torquote%20erreichte%20Lionel,zuletzt%20bei%2035%20Millionen%20Euro.
+https://www.goal.com/de/meldungen/cristiano-ronaldo-vs-lionel-messi-statistik-vergleich-wer-ist-besser-goat/blt1ebc3e4bffea6c60
+
+LO5:
+Usability testing: https://www.nngroup.com/articles/usability-testing-101/
