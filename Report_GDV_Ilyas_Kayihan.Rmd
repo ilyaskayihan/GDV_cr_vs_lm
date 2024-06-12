@@ -1,5 +1,5 @@
 ---
-title: "GDV: cr_vs_lm"
+title: "GDV: Cristiano Ronaldo vs Lionel Messi"
 author: "Ilyas Kayihan"
 date: "2024-03-07"
 output:
@@ -13,6 +13,7 @@ output:
     toc: true
 ---
 Whole Report on Github: https://github.com/ilyaskayihan/GDV_cr_vs_lm
+
 
 
 ```{r setup, include=FALSE}
@@ -73,32 +74,12 @@ season_cr <- aggregate(Type ~ Season, data = cr, FUN = length)
 season_cr <- season_cr[season_cr$Season != 0, ] # Remove position 0 if present
 season_cr <- season_cr[order(-season_cr$Type), ] # Sorting by number of goals in descending order
 
-# Determine the color palette for Cristiano Ronaldo
-color_cr <- colorRamp(c("lightblue", "darkblue"))
 
-# Create the bar plot for Cristiano Ronaldo with color gradient
-plot_cr <- plot_ly(season_cr, x = ~Season, y = ~Type, type = "bar", name = "Cristiano Ronaldo", color = ~Type, colors = color_cr)
 
 # Grouping goals by season for Lionel Messi
 season_lm <- aggregate(Type ~ Season, data = lm, FUN = length)
 season_lm <- season_lm[season_lm$Season != 0, ] # Remove position 0 if present
 season_lm <- season_lm[order(-season_lm$Type), ] # Sorting by number of goals in descending order
-
-# Determine the color palette for Lionel Messi
-color_lm <- colorRamp(c("lightcoral", "darkred"))
-
-# Create the bar plot for Lionel Messi with color gradient
-plot_lm <- plot_ly(season_lm, x = ~Season, y = ~Type, type = "bar", name = "Lionel Messi", color = ~Type, colors = color_lm)
-
-subplot <- subplot(plot_cr, plot_lm, nrows = 1, titleX = FALSE)
-
-# Adjusting the layout
-subplot <- subplot %>% layout(title = "Comparison of Goals by Ronaldo and Messi per season",
-                               xaxis = list(title = "Playing Season"),
-                               yaxis = list(title = "Goals"),
-                               height = 500, width = 800)
-
-subplot
 
 
 
